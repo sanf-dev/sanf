@@ -1,9 +1,11 @@
 {
   "name": "sanf/rush",
   "description": "A simple and lightweight client for connecting to Rubika and Shad messaging platforms, designed for easy integration and efficient setup of user-friendly applications. This library provides essential functionalities for sending and receiving messages, managing user sessions, and ensuring smooth communication, making it ideal for developers looking to enhance their apps with messaging features.",
-  "version": "v1.2.1",
+  "version": "1.0.0",
   "license": "MIT",
   "readme": "https://github.com/sanf-dev/sanf/blob/main/README.md",
+  "minimum-stability": "stable",
+  "prefer-stable": true,
   "authors": [
     {
       "name": "AlirAli",
@@ -30,7 +32,6 @@
     }
   ],
   "require": {
-    "php": ">= 8.3.0",
     "phpseclib/phpseclib": "2.0.*",
     "cboden/ratchet": "^0.4.4",
     "ratchet/pawl": "^0.4.1",
