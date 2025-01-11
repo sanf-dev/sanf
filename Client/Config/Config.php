@@ -12,10 +12,10 @@ use Sanf\Enums\{
     Platform
 };
 
-if (!file_exists("config.json")) require_once "./Client/tools/settings.php";
-if (file_exists("config.json")) $setting = json_decode(file_get_contents("config.json"), true);
+define('COLOR_RED', "\033[31m");
+define('COLOR_WHITE', "\033[37m");
+typing_text(COLOR_RED . "Any misuse is the responsibility of the user, and we will not assume any liability for it." . COLOR_WHITE . "\nWe advise users not to run this bot on personal or important accounts; it is recommended to install it only on a non-essential account");
 
-typing_text($setting["main_settings"]["message"]);
 function typing_text($text, $delay = 10)
 {
     for ($i = 0; $i < strlen($text); $i++) {
@@ -29,7 +29,6 @@ class Config
 {
     private string $auth;
     private string $server;
-    private array $setting;
     private int $request_count = 0;
     private Crypto $crypto;
     private Platform $platform;
@@ -41,7 +40,6 @@ class Config
         $this->platform = $platform;
         $this->application = $application;
         $this->crypto = new Crypto($auth, $private_key, $platform);
-        $this->setting = json_decode(file_get_contents("config.json"), true);
 
         if (
             empty($this->server)
@@ -100,7 +98,7 @@ class Config
                 'headers' => $this->platform->getClientPlatfrom($this->application)['header']
             ]);
             if (
-                $this->request_count >= $this->setting["main_settings"]["request_count"]
+                $this->request_count >= 70
             ) {
                 $this->server = self::getDCs()["messenger"];
                 $this->request_count = 0;
