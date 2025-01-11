@@ -44,7 +44,7 @@ composer require sanf/rush
    ```php
    $auth = "your Auth Key";
    $key = "your privateKey";
-   $self = new Rubika($auth, $key, Platform::Android, Application::Rubika);
+   $self = new Client($auth, $key, Platform::Android, Application::Rubika);
    ```
 
    ### Note:
