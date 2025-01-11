@@ -99,8 +99,7 @@ class Client
         return $this->config->setJson("getAvatars", ["object_guid" => $object_guid]);
     }
 
-    public function 
-    (string $object_guid, chatActivity $action)
+    public function sendChatActivity(string $object_guid, chatActivity $action)
     {
         return $this->config->setJson("sendChatActivity", ["object_guid" => $object_guid, "activity" => $action->value]);
     }
