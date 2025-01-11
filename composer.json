@@ -4,6 +4,8 @@
   "version": "v1.0.0",
   "license": "MIT",
   "readme": "https://github.com/sanf-dev/sanf/blob/main/README.md",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "authors": [
     {
       "name": "AlirAli",
