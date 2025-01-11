@@ -1,11 +1,11 @@
 <p align="center"><b>Rush | Rubika - Shad API</b></p>
 
 **Table of Contents**
->[Description](https://github.com/sanf-dev/mtest/blob/main/README.md#rubika-client)<br>
-[Installation](https://github.com/sanf-dev/mtest/blob/main/README.md#installation)<br>
-[Create a Bot](https://github.com/sanf-dev/mtest/blob/main/README.md#creating-a-bot)<br>
-[Rubika and Shad Methods](https://github.com/sanf-dev/mtest/blob/main/README.md#methods)<br>
-[Socket Methods](https://github.com/sanf-dev/mtest/blob/main/README.md#socket-methods)
+>[Description](https://github.com/sanf-dev/sanf?tab=readme-ov-file#rubika-client)<br>
+[Installation](https://github.com/sanf-dev/sanf?tab=readme-ov-file#installation)<br>
+[Create a Bot](https://github.com/sanf-dev/sanf?tab=readme-ov-file#creating-a-bot)<br>
+[Rubika and Shad Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#methods)<br>
+[Socket Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#socket-methods)
 
 # Rubika Client
 
@@ -44,7 +44,7 @@ composer require sanf/rush
    ```php
    $auth = "your Auth Key";
    $key = "your privateKey";
-   $self = new Rubika($auth, $key, Platform::Android, Application::Rubika);
+   $self = new Client($auth, $key, Platform::Android, Application::Rubika);
    ```
 
    ### Note:
