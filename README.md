@@ -2,28 +2,30 @@
 
 # What's New?
 
-    - Update v2.1.1
+> Update v2.1.1
 
 ## Updates:
 
-    - Added Rubino Android Client
-    - Added Auto-Login for a Source (Beta | Login on Android)
-    - Synced with the Latest Rubika and Shad Updates
-    - Added Method to Play Video from Link or File Path in Live with ffmpeg Tool (if installed)
+- Added Rubino Android Client
+- Added Auto-Login for a Source (Beta | Login on Android)
+- Synced with the Latest Rubika and Shad Updates
+- Added Method to Play Video from Link or File Path in Live with ffmpeg Tool (if installed)
 
 ## Debugged:
 
-    - Debugged Methods and Parts of the Library
-    - Fixed Issue of Not Running on Host
-    - Changed Method of Calling the Library
+- Debugged Methods and Parts of the Library
+- Fixed Issue of Not Running on Host
+- Changed Method of Calling the Library
 
 # **Table of Contents**
 
 - [Description](https://github.com/sanf-dev/sanf?tab=readme-ov-file#rubika-client)
 - [Installation](https://github.com/sanf-dev/sanf?tab=readme-ov-file#installation)
 - [Create a Bot](https://github.com/sanf-dev/sanf?tab=readme-ov-file#creating-a-bot)
-- [Rubika and Shad Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#methods)
-- [Socket Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#socket-methods)
+- [config rubika and shad](https://github.com/sanf-dev/sanf?tab=readme-ov-file#rubika-and-shad-client-configuration)
+- [config rubino](https://github.com/sanf-dev/sanf?tab=readme-ov-file#rubino-configuration)
+- [Rubika and Shad Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#rubika-and-shad-methods)
+- [Socket Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#rubika-and-shad-methods)
 
 # Rubika Client
 
@@ -31,9 +33,9 @@ A simple yet practical client for creating **self bots** for Rubika and Shad, su
 
 # Installation:
 
-    ```bash
-    composer require sanf/rush
-    ```
+```bash
+composer require sanf/rush
+```
 
 # Creating a Bot:
 
@@ -69,54 +71,54 @@ $self->on_message($action);
 
 ## Using Auto-Login
 
-    ```php
-    // Use your custom session name instead of Sanf
-    $self = new Client("Sanf");
-    ```
+```php
+// Use your custom session name instead of Sanf
+$self = new Client("Sanf");
+```
 
 ## Manually Entering Information
 
-    ```php
-    // Use your custom session name instead of Sanf
-    $self = new Client("Sanf");
+```php
+// Use your custom session name instead of Sanf
+$self = new Client("Sanf");
 
-    /*
-    To manually enter the information, you need to provide 4 parameters:
+/*
+To manually enter the information, you need to provide 4 parameters:
 
-    1. auth        | Account ID
-    2. key         | Private Key
-    3. platform    | Platform (Web, Android, PWA - PWA is not available for Shad, default is Web)
-    4. application | Application
-    */
+1. auth        | Account ID
+2. key         | Private Key
+3. platform    | Platform (Web, Android, PWA - PWA is not available for Shad, default is Web)
+4. application | Application
+*/
 
-    // For example, our data will be as follows
-    $option = [
-        "auth" => "your Auth key",
-        "key" => "your Private key",
-        "platform" => "select Platform",
-        "application" => "select Application"
-    ];
+// For example, our data will be as follows
+$option = [
+    "auth" => "your Auth key",
+    "key" => "your Private key",
+    "platform" => "select Platform",
+    "application" => "select Application"
+];
 
-    // For Rubika
-    $option = [
-        "auth" => "your Auth key",
-        "key" => "your Private key",
-        "platform" => Platform::PWA, // Can be changed to Web or Android
-        "application" => Application::Rubika // Choosing an application
-    ];
+// For Rubika
+$option = [
+    "auth" => "your Auth key",
+    "key" => "your Private key",
+    "platform" => Platform::PWA, // Can be changed to Web or Android
+    "application" => Application::Rubika // Choosing an application
+];
 
-    // For Shad
-    $option = [
-        "auth" => "your Auth key",
-        "key" => "your Private key",
-        "platform" => Platform::Web, // Can be changed to Android - PWA is not available for Shad
-        "application" => Application::Shad // Choosing an application
-    ];
+// For Shad
+$option = [
+    "auth" => "your Auth key",
+    "key" => "your Private key",
+    "platform" => Platform::Web, // Can be changed to Android - PWA is not available for Shad
+    "application" => Application::Shad // Choosing an application
+];
 
-    // Now we provide the information to the client
-    // Note that you must set the first value to null
-    $self = new Client(null, $option);
-    ```
+// Now we provide the information to the client
+// Note that you must set the first value to null
+$self = new Client(null, $option);
+```
 
 # Rubino Configuration
 
@@ -124,29 +126,29 @@ $self->on_message($action);
 
 ## Using Auto-Login
 
-    ```php
-    // Use your custom session name instead of Sanf
-    $self = new Rubino("Sanf");
-    ```
+```php
+// Use your custom session name instead of Sanf
+$self = new Rubino("Sanf");
+```
 
 ## Manually Entering Information
 
-    ```php
-    /*
-    In this section, you have 1 mandatory parameter and 1 optional parameter:
-    1. auth        | Account ID (mandatory)
-    2. profile_id  | Custom Profile ID (optional, if not entered, the bot will automatically retrieve all profile IDs and you will choose which account it will operate on)
-    */
+```php
+/*
+In this section, you have 1 mandatory parameter and 1 optional parameter:
+1. auth        | Account ID (mandatory)
+2. profile_id  | Custom Profile ID (optional, if not entered, the bot will automatically retrieve all profile IDs and you will choose which account it will operate on)
+*/
 
-    // For example, our data will be as follows
-    $option = [
-        "auth" => "your auth key", // Mandatory
-        "profile_id" => "custom profile id" // Optional
-    ];
+// For example, our data will be as follows
+$option = [
+    "auth" => "your auth key", // Mandatory
+    "profile_id" => "custom profile id" // Optional
+];
 
-    // Now we provide the information to the client
-    $self = new Rubino(null, $option);
-    ```
+// Now we provide the information to the client
+$self = new Rubino(null, $option);
+```
 
 # Rubika and Shad Methods
 
