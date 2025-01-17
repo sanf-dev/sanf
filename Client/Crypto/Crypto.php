@@ -5,7 +5,6 @@ namespace Sanf\Crypto;
 use phpseclib\Crypt\AES;
 use phpseclib\Crypt\RSA;
 use Sanf\Enums\{
-    Application,
     Platform
 };
 
@@ -88,7 +87,6 @@ class Crypto
         if ($key === false) {
             return null;
         }
-
         $signature = '';
         if (openssl_sign($data, $signature, $key, OPENSSL_ALGO_SHA256)) {
             return base64_encode($signature);

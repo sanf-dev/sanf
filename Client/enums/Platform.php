@@ -8,17 +8,17 @@ enum Platform: string
     case Web = "Web";
     case PWA = "PWA";
 
-    public function getClientPlatfrom(Application $app = Application::Rubika): array
+    public function getClientPlatform(Application $app = Application::Rubika): array
     {
         return match ($this) {
             self::Android => [
                 "client" => [
                     "app_name" => "Main",
-                    "app_version" => "3.8.1",
+                    "app_version" => $app->value == "Rubika" ? "3.8.1" : "3.6.5",
                     "store" => "Direct",
-                    "lang_code" => "fa",
-                    "package" => $app->value == "Rubika" ? "app.rbmain.a" : "ir.resaneh1.iptv",
-                    "temp_code" => "30",
+                    "lang_code" => "en",
+                    "package" => $app->value == "Rubika" ? "app.rbmain.a" : "ir.medu.shad",
+                    "temp_code" => $app->value == "Rubika" ? "30" : "27",
                     "platform" => "Android"
                 ],
                 "url" => $app->value == "Rubika" ? "https://getdcmess.iranlms.ir/" : "https://shgetdcmess.iranlms.ir/",
@@ -27,9 +27,10 @@ enum Platform: string
                     "Referer: https://web.rubika.ir",
                     "Origin: https://web.rubika.ir"
                 ] : [
-                    "content-type: application/json; charset=UTF-8",
-                    "Referer: https://web.shad.ir",
-                    "Origin: https://web.shad.ir"
+                    "Accept-Encoding" => "gzip",
+                    "Connection" => "Keep-Alive",
+                    "Content-Type" => "application/json; charset=utf-8",
+                    "User-Agent" => "okhttp/3.12.1"
                 ]
             ],
             self::Web => [

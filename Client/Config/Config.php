@@ -12,19 +12,6 @@ use Sanf\Enums\{
     Platform
 };
 
-define('COLOR_RED', "\033[31m");
-define('COLOR_WHITE', "\033[37m");
-typing_text(COLOR_RED . "Any misuse is the responsibility of the user, and we will not assume any liability for it." . COLOR_WHITE . "\nWe advise users not to run this bot on personal or important accounts; it is recommended to install it only on a non-essential account");
-
-function typing_text($text, $delay = 10)
-{
-    for ($i = 0; $i < strlen($text); $i++) {
-        echo $text[$i];
-        usleep($delay * 1000);
-    }
-    echo PHP_EOL;
-}
-
 class Config
 {
     private string $auth;
@@ -55,7 +42,7 @@ class Config
         $changeJson = array(
             "method" => $method,
             "input" => $input,
-            "client" => $this->platform->getClientPlatfrom($this->application)["client"]
+            "client" => $this->platform->getClientPlatform($this->application)["client"]
         );
         !$setAuth_enc ? $changeJson["is_background"] = false : null;
         $changeJson = json_encode($changeJson);
@@ -68,8 +55,6 @@ class Config
         $result = $this->Post($json);
         $result = isset($result['data']) ? $result['data'] : $result;
         return is_null($result) ? ["status" => "ERROR_ACTION", "status_det" => "NOT_REGISTERED_RNULL"] : $result;
-        // return $json;
-        // return $changeJson;
     }
 
     private static function cmd_run($run)
@@ -95,11 +80,9 @@ class Config
 
             $response = $client->post($dc, [
                 'json' => $data,
-                'headers' => $this->platform->getClientPlatfrom($this->application)['header']
+                'headers' => $this->platform->getClientPlatform($this->application)['header']
             ]);
-            if (
-                $this->request_count >= 70
-            ) {
+            if ($this->request_count >= 70) {
                 $this->server = self::getDCs()["messenger"];
                 $this->request_count = 0;
             }
@@ -129,44 +112,54 @@ class Config
                 "lang_code" => "fa"
             ]
         ];
-        // $ressult =  json_decode(file_get_contents($this->platform->getClientPlatfrom($this->application)['url']), true);
+        $support_API = [
+            "storages" => [
+                "https://messenger1050.iranlms.ir",
+                "https://messenger1040.iranlms.ir",
+                "https://messenger1035.iranlms.ir",
+                "https://messenger1036.iranlms.ir",
+                "https://messenger1037.iranlms.ir",
+                "https://messenger1038.iranlms.ir",
+                "https://messenger1039.iranlms.ir"
+            ],
+            "API" => [
+                "https://messengerg2c38.iranlms.ir",
+                "https://messengerg2c152.iranlms.ir",
+                "https://messengerg2c158.iranlms.ir"
+            ],
+            "socket" => [
+                "wss://jsocket4.iranlms.ir:80",
+                "wss://nsocket11.iranlms.ir:80",
+                "wss://jsocket2.iranlms.ir:80",
+                "wss://nsocket12.iranlms.ir:80"
+            ]
+        ];
+
+        // $ressult =  json_decode(file_get_contents($this->platform->getClientPlatform($this->application)['url']), true);
         $ressult = $this->DCS($json);
-        $messanger =  $ressult['data']['API'] ?? $ressult['data']['default_api_urls'] ?? false;
-        $socket = $ressult['data']['socket'] ?? $ressult['data']['default_sockets'] ?? false;
-        $storage = $ressult['data']['storage'] ?? false;
+        $messanger =  $ressult['data']['API'] ?? $ressult['data']['default_api_urls'] ?? $support_API["API"] ?? false;
+        $socket = $ressult['data']['socket'] ?? $ressult['data']['default_sockets'] ?? $support_API["socket"] ?? false;
+        $storage = $ressult['data']['storage'] ?? $ressult['data']['storages'] ?? $support_API["storages"] ?? false;
 
-        if ($storage) $R_storage = $storage[array_rand($storage)];
-        else $R_storage = $storage[array_rand([
-            "https://messenger1050.iranlms.ir",
-            "https://messenger1040.iranlms.ir",
-            "https://messenger1035.iranlms.ir",
-            "https://messenger1036.iranlms.ir",
-            "https://messenger1037.iranlms.ir",
-            "https://messenger1038.iranlms.ir",
-            "https://messenger1039.iranlms.ir"
-        ])];
-
-        if ($messanger) $R_messanger = $messanger[array_rand($messanger)];
-        else $R_messanger = $messanger[array_rand(["https://messengerg2c38.iranlms.ir", "https://messengerg2c152.iranlms.ir", "https://messengerg2c158.iranlms.ir"])];
-
-        if ($socket) $R_socket = $socket[array_rand($socket)];
-        else $R_socket = $socket[array_rand(["wss://nsocket12.iranlms.ir:80"])];
+        $S_messanger = $messanger ? $messanger[array_rand($messanger)] : exit("urls not found - messager");
+        $S_socket = $socket ? $socket[array_rand($socket)] : exit("urls not found - socket");
+        $S_storage = $storage ? $storage[array_rand($storage)] : exit("urls not found - storage");
 
         return [
-            "messenger" => $R_messanger,
-            "socket" => $R_socket,
-            "storage" => $R_storage
+            "messenger" => $S_messanger,
+            "socket" => $S_socket,
+            "storage" => $S_storage
         ];
     }
 
     private function DCS($data)
     {
-        $dc = $this->platform->getClientPlatfrom($this->application)['url'];
+        $dc = $this->platform->getClientPlatform($this->application)['url'];
         $ch = curl_init($dc);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        $headers = $this->platform->getClientPlatfrom($this->application)['header'];
+        $headers = $this->platform->getClientPlatform($this->application)['header'];
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));

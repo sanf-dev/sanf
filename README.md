@@ -1,111 +1,154 @@
 <p align="center"><b>Rush | Rubika - Shad API</b></p>
 
-**Table of Contents**
->[Description](https://github.com/sanf-dev/sanf?tab=readme-ov-file#rubika-client)<br>
-[Installation](https://github.com/sanf-dev/sanf?tab=readme-ov-file#installation)<br>
-[Create a Bot](https://github.com/sanf-dev/sanf?tab=readme-ov-file#creating-a-bot)<br>
-[Rubika and Shad Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#methods)<br>
-[Socket Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#socket-methods)
+# What's New?
+
+    - Update v2.1.1
+
+## Updates:
+
+    - Added Rubino Android Client
+    - Added Auto-Login for a Source (Beta | Login on Android)
+    - Synced with the Latest Rubika and Shad Updates
+    - Added Method to Play Video from Link or File Path in Live with ffmpeg Tool (if installed)
+
+## Debugged:
+
+    - Debugged Methods and Parts of the Library
+    - Fixed Issue of Not Running on Host
+    - Changed Method of Calling the Library
+
+# **Table of Contents**
+
+- [Description](https://github.com/sanf-dev/sanf?tab=readme-ov-file#rubika-client)
+- [Installation](https://github.com/sanf-dev/sanf?tab=readme-ov-file#installation)
+- [Create a Bot](https://github.com/sanf-dev/sanf?tab=readme-ov-file#creating-a-bot)
+- [Rubika and Shad Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#methods)
+- [Socket Methods](https://github.com/sanf-dev/sanf?tab=readme-ov-file#socket-methods)
 
 # Rubika Client
 
 A simple yet practical client for creating **self bots** for Rubika and Shad, supporting three platforms: **Android, Web, and PWA**. This client is designed for building self bots for various purposes, including **group management, entertainment, assistance, gaming, and more**.
 
-## Installation
+# Installation:
 
-To get started, use the following command to install:
+    ```bash
+    composer require sanf/rush
+    ```
 
-```bash
-composer require sanf/rush
+# Creating a Bot:
+
+```php
+// Loading the classes
+require_once "vendor/autoload.php";
+
+use Sanf\Client;
+use Sanf\Tools\Message;
+
+// Entering login information and setting up the client
+$self = new Client('rush');
+
+// Creating an anonymous function
+$action = function (Message $update) use ($self) {
+    // Receiving text updates
+    $text = $update->text();
+
+    // Creating a command for reacting to a message, for example:
+    if ($text == "hello") {
+        // Sending the response to the user using the reply command
+        $update->reply("Hello, nice to meet you!\nMy name is Sanf.!!!!!");
+    }
+};
+
+// Connecting to the WebSocket
+$self->on_message($action);
 ```
 
-## Creating a Bot
+**Congratulations, you have now set up a client!**
 
-1. Create a file with your preferred name.
-2. Include the vendor autoload file.
+# Rubika and Shad Client Configuration
 
-   ```php
-   require_once __DIR__ . '/vendor/autoload.php';
-   ```
+## Using Auto-Login
 
-3. Use the following import statements to include the client.
+    ```php
+    // Use your custom session name instead of Sanf
+    $self = new Client("Sanf");
+    ```
 
-   ```php
-   use Sanf\Rubika;
-   use Sanf\Tools\Message;
-   use Sanf\Enums\{
-       Application,
-       Platform
-   };
-   ```
+## Manually Entering Information
 
-4. Now, instantiate the bot class.
+    ```php
+    // Use your custom session name instead of Sanf
+    $self = new Client("Sanf");
 
-   ```php
-   $auth = "your Auth Key";
-   $key = "your privateKey";
-   $self = new Client($auth, $key, Platform::Android, Application::Rubika);
-   ```
+    /*
+    To manually enter the information, you need to provide 4 parameters:
 
-   ### Note:
+    1. auth        | Account ID
+    2. key         | Private Key
+    3. platform    | Platform (Web, Android, PWA - PWA is not available for Shad, default is Web)
+    4. application | Application
+    */
 
-   To use other platforms, you can specify:
+    // For example, our data will be as follows
+    $option = [
+        "auth" => "your Auth key",
+        "key" => "your Private key",
+        "platform" => "select Platform",
+        "application" => "select Application"
+    ];
 
-   ```php
-   // For Rubika:
-   Platform::Android
-   Platform::Web
-   Platform::PWA
+    // For Rubika
+    $option = [
+        "auth" => "your Auth key",
+        "key" => "your Private key",
+        "platform" => Platform::PWA, // Can be changed to Web or Android
+        "application" => Application::Rubika // Choosing an application
+    ];
 
-   // For Shad:
-   Platform::Android
-   Platform::Web
-   ```
+    // For Shad
+    $option = [
+        "auth" => "your Auth key",
+        "key" => "your Private key",
+        "platform" => Platform::Web, // Can be changed to Android - PWA is not available for Shad
+        "application" => Application::Shad // Choosing an application
+    ];
 
-   _Note: Shad does not support the PWA platform._
+    // Now we provide the information to the client
+    // Note that you must set the first value to null
+    $self = new Client(null, $option);
+    ```
 
-   To use the self bots for Rubika and Shad, simply change the application type:
+# Rubino Configuration
 
-   ```php
-   // For Rubika:
-   Application::Rubika
-   // For Shad:
-   Application::Shad
-   ```
+**Rubino configurations are similar to Rubika, but for manual entry, only `auth` is used.**
 
-   **Now just use the command you want!**
+## Using Auto-Login
 
-   ### Example:
+    ```php
+    // Use your custom session name instead of Sanf
+    $self = new Rubino("Sanf");
+    ```
 
-   ```php
-   // Get Chats
-   $res = $self->getChats();
-   echo json_encode($res, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+## Manually Entering Information
 
-   // Send Message
-   $res = $self->sendMessage("target guid", "text", "reply message id (optional, int|string)");
-   ```
+    ```php
+    /*
+    In this section, you have 1 mandatory parameter and 1 optional parameter:
+    1. auth        | Account ID (mandatory)
+    2. profile_id  | Custom Profile ID (optional, if not entered, the bot will automatically retrieve all profile IDs and you will choose which account it will operate on)
+    */
 
-5. Now, use the following command to connect to the websocket.
+    // For example, our data will be as follows
+    $option = [
+        "auth" => "your auth key", // Mandatory
+        "profile_id" => "custom profile id" // Optional
+    ];
 
-   ```php
-   // We create an anonymous function.
+    // Now we provide the information to the client
+    $self = new Rubino(null, $option);
+    ```
 
-   $bot = function (Message $update) use ($self) {
-       // Receive new messages
-       $text = $update->text();
-       // Condition for monitoring received messages.
-       if (in_array($text, ["سلام", "hello"])) {
-           $update->reply("Hello from **rush** Client ;)");
-       }
-   };
-   // Connect to websockets
-   $self->on_message($bot);
-   ```
-
-**Congratulations! You've now created a self bot and can add more features to it.**
-
-# Methods
+# Rubika and Shad Methods
 
 | Method               | Description                                        |
 | -------------------- | -------------------------------------------------- |
@@ -126,7 +169,7 @@ composer require sanf/rush
 | getInfoByUsername    | Get information about a user using their username. |
 | getMessages          | Retrieve a list of messages from a specific chat.  |
 | getMessagesByID      | Retrieve a message by its ID.                      |
-| getMySessions        | Get a list of your active sessions                 |
+| getMySessions        | Get a list of your active sessions.                |
 
 # Socket Methods
 
@@ -156,7 +199,7 @@ composer require sanf/rush
 | title                     | Get the title of the current chat.                                     |
 | getData                   | Receive all the output data from the websocket.                        |
 
-**Do you need help? Feel free to reach out on [Rubika](https://rubika.ir/coder95) or [Telegram](https://t.me/coder95)!**
+**Need help? Send a message on [Telegram](https://t.me/coder95) or [Rubika](https://rubika.ir/coder95) .!**
 
 <hr>
 <p align="center">

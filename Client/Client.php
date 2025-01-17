@@ -12,7 +12,8 @@ use React\EventLoop\Loop;
 use Sanf\Crypto\Crypto;
 use Sanf\Config\Config;
 use Sanf\Tools\{
-    Message
+    Message,
+    SignIn
 };
 use Sanf\Enums\{
     Application,
@@ -34,11 +35,31 @@ use Sanf\Enums\{
 class Client
 {
     private Config $config;
-    private $account_auth;
-    public function __construct(string $auth, string $privateKey, Platform $platform = Platform::Web, Application $application = Application::Rubika)
+    public Platform $platform;
+    private string $account_auth;
+
+    /**
+     * set self settings
+     * @param string|null $session | auto login - session name
+     * @param array $option | set self settings : auth  |  key  |  platform  |  application
+     */
+    public function __construct(string|null $session = null, array $option = [])
     {
-        $this->config = new Config($auth, $privateKey, $platform, $application);
-        $this->account_auth = $auth;
+        $auth = isset($option["auth"]) && !empty($option["auth"]) ? $option["auth"] : null;
+        $privateKey = isset($option["key"]) && !empty($option["key"]) ? $option["key"] : null;
+        $platform = isset($option["platform"]) && !empty($option["platform"]) ? $option["platform"] : Platform::Web;
+        $application = isset($option["application"]) && !empty($option["application"]) ? $option["application"] : Application::Rubika;
+        $this->platform = $platform;
+        if (is_null($session) && !empty($auth) && !empty($privateKey)) {
+            $this->config = new Config($auth, $privateKey, $platform, $application);
+            $this->account_auth = $auth;
+        } elseif (!is_null($session)) {
+            if (file_exists("$session.sr")) self::set_run($session);
+            else {
+                new SignIn($session, $application);
+                exit("Please run the program again.\n");
+            }
+        } else exit("The input cannot be empty.");
     }
 
     public function getServiceInfo(string $service_guid)
@@ -180,7 +201,7 @@ class Client
         return $this->config->setJson("actionOnMessageReaction", $json);
     }
 
-    public function getTrendStickerSets(string $object_guid, int $message_id)
+    public function getTrendStickerSets()
     {
         return $this->config->setJson("getTrendStickerSets", []);
     }
@@ -321,14 +342,20 @@ class Client
     }
 
 
-    public function DownloadFile(string $object_guid, string|int $message_id, string|null $file_name = null, callable $progress = null)
+    public function DownloadFile(bool|array $file_inline = false, string|null $object_guid = null, string|int $message_id = null, string|null $file_name = null, callable $progress = null)
     {
-        $file_name = is_null($file_name) ? "sanf-downloader-" . random_int(0, 50) : $file_name;
-        $message_info = self::getMessagesByID($object_guid, [$message_id]);
-        if (!isset($message_info["messages"][0])) return "message not found | please check param [object_guid | message_id]";
-        else $message_info = $message_info["messages"][0];
-        if (!isset($message_info["file_inline"])) return "file not found | please check param [object_guid | message_id]";
-        else $message_info = $message_info["file_inline"];
+        $file_name = is_null($file_name) ? "sanf-downloader-" . random_int(0, 100) : $file_name;
+        if (!$file_inline) {
+            $message_info = self::getMessagesByID($object_guid, [$message_id]);
+            if (!isset($message_info["messages"][0])) return "message not found | please check param [object_guid | message_id]";
+            else $message_info = $message_info["messages"][0];
+            if (!isset($message_info["file_inline"])) return "file not found | please check param [object_guid | message_id]";
+            $message_info = $message_info["file_inline"];
+        } else {
+            if (!is_array($file_inline)) return " input invalid | file (info) not found";
+            $message_info = $file_inline;
+        }
+
         if (!isset(
             $message_info["file_id"],
             $message_info["mime"],
@@ -415,7 +442,7 @@ class Client
         return $this->config->setJson("requestSendFile", ["file_name" => $file_name, "size" => $size, "mime" => $mime]);
     }
 
-    public function UploadedFile(string $file, callable $progress = null)
+    public function UploadedFile(string $file, string|null $costomMime = null, callable $progress = null)
     {
         $context = stream_context_create([
             "ssl" => [
@@ -442,7 +469,7 @@ class Client
 
         $total_parts = (int) ceil(strlen($file_content) / $chunk_size);
         $file_size = strval(strlen($file_content));
-        $pr = self::requestSendFile($file_name, pathinfo($file, PATHINFO_EXTENSION), $file_size);
+        $pr = self::requestSendFile($file_name, is_null($costomMime) ? pathinfo($file, PATHINFO_EXTENSION) : $costomMime, $file_size);
 
         for ($part_number = 1; $part_number <= $total_parts; $part_number++) {
             $start = ($part_number - 1) * $chunk_size;
@@ -602,9 +629,9 @@ class Client
         return $this->config->setJson("sendMessage", $json);
     }
 
-    public function sendImage(string $object_guid, string $file_path, $reply, string $caption = "")
+    public function sendImage(string $object_guid, string $file_path, $reply, $costomMime = null, string $caption = "")
     {
-        $up = $this->UploadedFile($file_path);
+        $up = $this->UploadedFile($file_path, $costomMime);
         if (!$up['status']) {
             echo $up["message"];
             return false;
@@ -721,28 +748,6 @@ class Client
         return $this->config->setJson("getGroupLink", ["group_guid" => $group_guid]);
     }
 
-    public function editGroupInfo_title(string $object_guid, string $title)
-    {
-        return $this->config->setJson("editGroupInfo", [
-            "group_guid" => $object_guid,
-            "title" => $title,
-            "updated_parameters" => [
-                "title"
-            ]
-        ]);
-    }
-
-    public function editGroupInfo_historyMembers(string $group_guid, setHistory $action)
-    {
-
-        return $this->config->setJson("editGroupInfo", ["group_guid" => $group_guid, "chat_history_for_new_members" => $action->value, "updated_parameters" => ["chat_history_for_new_members"]]);
-    }
-
-    public function editGroupInfo_eventMessages(string $group_guid, bool $showEventMessages = true)
-    {
-        return $this->config->setJson("editGroupInfo", ["group_guid" => $group_guid, "event_messages" => $showEventMessages, "updated_parameters" => ["event_messages"]]);
-    }
-
     public function setGroupLink(string $group_guid)
     {
         return $this->config->setJson("setGroupLink", ["group_guid" => $group_guid]);
@@ -828,7 +833,7 @@ class Client
             $name .= $guid["first_name"] . "\n";
         }
         $name .= "\nadd to group :)";
-        $this->leaveGroup($get_member_group_guid);
+        $left ? $this->leaveGroup($get_member_group_guid) : null;
         $this->sendMessage($add_member_group_guid, $name);
         return  ["guids" => $MGuids, "names" => $NameUsers, "server_message" => $this->addGroupMembers($add_member_group_guid, $MGuids)];
     }
@@ -956,8 +961,13 @@ class Client
         $server = $this->config->getDCs()['socket'];
         $loop = Loop::get();
         $connector = new Connector($loop);
-        echo "set server connecting : [$server]";
-        $this->connect($connector, $server, $callback, $loop, 0);
+        if ($this->platform->value == "Web") {
+            echo "Web Client - set server connecting : [$server]";
+            $this->connect($connector, $server, $callback, $loop, 0);
+        } else {
+            echo "Android Client - set server connecting : [$server]";
+            $this->connect_an($connector, $server, $callback, $loop, 0);
+        }
         $loop->run();
     }
 
@@ -980,7 +990,7 @@ class Client
                     self::getChatsUpdates();
                 });
 
-                $conn->on('message', function ($msg) use ($conn, $callback) {
+                $conn->on('message', function ($msg) use ($callback) {
                     $data = json_decode($msg, true);
                     if (isset($data['type'])) {
                         $get_msg = json_decode(Crypto::decrypt($data['data_enc'], true), true);
@@ -1000,7 +1010,61 @@ class Client
                         $this->connect($connector, $server, $callback, $loop, $attempt + 1);
                     });
                 });
-            }, function (Exception $e) use ($callback) {
+            }, function (Exception $e) {
+                exit("\n-> Error Connect Socket\n error message:\n{$e->getMessage()}\n");
+            });
+    }
+
+    private function connect_an(Connector $connector, string $server, callable $callback, $loop, int $attempt)
+    {
+        self::getChats();
+        $connector($server, [], [])
+            ->then(function (WebSocket $conn) use ($callback, $loop, $server, $attempt) {
+                echo "-> connected \n";
+                $connect_data = json_encode([
+                    "api_version" => 4,
+                    "auth" => $this->account_auth,
+                    "client" => [
+                        "app_name" => "Main",
+                        "app_version" => "3.8.1",
+                        "lang_code" => "en",
+                        "package" => "app.rbmain.a",
+                        "platform" => "Android",
+                        "store" => "Direct",
+                        "temp_code" => "30"
+                    ],
+                    "data" => "{\"version\":\"2\"}",
+                    "is_background" => false,
+                    "method" => "handShake"
+                ]);
+
+                $conn->send($connect_data);
+                $timer = $loop->addPeriodicTimer(30, function () use ($conn) {
+                    $conn->send(json_encode([]));
+                    self::getChatsUpdates();
+                });
+
+                $conn->on('message', function ($msg) use ($callback) {
+                    $data = json_decode($msg, true);
+                    if (isset($data['type'])) {
+                        $get_msg = json_decode(Crypto::decrypt($data['data_enc'], false), true);
+                        if (isset($get_msg['message_updates']) && isset($get_msg['message_updates'][0]['action']) && $get_msg['message_updates'][0]['action'] == "New") {
+                            $callback(new Message($get_msg, $this));
+                        }
+                    }
+                });
+
+                $conn->on('close', function ($code, $reason) use ($timer, $callback, $server, $attempt, $loop) {
+                    $connector = new Connector($loop);
+                    $loop->cancelTimer($timer);
+                    echo "\n-> Connection closed, attempting to reconnect... \n";
+
+                    $delay = min(5, $attempt + 1);
+                    $loop->addTimer($delay, function () use ($connector, $server, $callback, $loop, $attempt) {
+                        $this->connect($connector, $server, $callback, $loop, $attempt + 1);
+                    });
+                });
+            }, function (Exception $e) {
                 exit("\n-> Error Connect Socket\n error message:\n{$e->getMessage()}\n");
             });
     }
@@ -1070,6 +1134,25 @@ class Client
         return $this->config->setJson("getJoinLinks", ["object_guid" => $object_guid]);
     }
 
+    /**
+     * Summary of livePlayer
+     * @param string $path
+     * @param string $stream_Url | stream url
+     * @param string $stream_Key | stream key
+     * @param int $rotation | The rotation or displacement of the film should be between 0 and 3 |  
+     * 0: 90 degrees clockwise | 
+     * 1: 90 degrees counter-clockwise | 
+     * 2: 180 degrees rotation | 
+     * 3: 90 degrees clockwise, then flip vertically
+     * @return void
+     */
+    public function livePlayer(string $path, string $stream_Url, string $stream_Key, int|bool $rotation = false)
+    {
+        $transpose = $rotation === false ?: " -vf transpose=$rotation";
+        $command = "ffmpeg -re -i {$path} -b:v 1200k -c:v libx264 -preset fast -g 50$transpose -c:a aac -b:a 128k -f flv {$stream_Url}{$stream_Key}";
+        exec($command);
+    }
+
     public function checkUserUsername(string $username)
     {
         return $this->config->setJson("checkUserUsername", ["username" => $username]);
@@ -1117,7 +1200,6 @@ class Client
             $json['settings']["show_my_phone_number"] = $phone;
             $json["update_parameters"][] = "show_my_phone_number";
         }
-        // return $json;
         return $this->config->setJson("setSetting", $json);
     }
 
@@ -1170,6 +1252,32 @@ class Client
         return $this->config->setJson("transcribeVoice", $json);
     }
 
+    private function set_run(string|null $session)
+    {
+        $data = json_decode(
+            self::Config_set(file_get_contents("$session.sr"), "sanf/rush-client"),
+            true
+        );
+        if ($data && isset($data["auth"])) {
+            $this->account_auth = $data["auth"];
+            $this->config = new Config(
+                $data["auth"],
+                $data["key"],
+                Platform::Android,
+                $data["app"] == "Rubika" ? Application::Rubika : Application::Shad
+            );
+            $this->platform = Platform::Android;
+        }
+    }
+    private function config_set($data, $key)
+    {
+        $key = hash('sha256', Crypto::setAuth($key), true);
+        $text = base64_decode($data);
+        $iv_dec = substr($text, 0, openssl_cipher_iv_length('aes-256-cbc'));
+        $text = substr($text, offset: openssl_cipher_iv_length('aes-256-cbc'));
+        return openssl_decrypt($text, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv_dec);
+    }
+
     private function downloadFile_url($url, $fileName, $mime = null)
     {
         $fileMime = preg_match('/\.([^.]+)(\?.*)?$/', $url, $FMime) ? $FMime[0] : ".zip";
@@ -1188,7 +1296,7 @@ class Client
         return ["status" => true, "name" => $fileName];
     }
 
-    public function Metadata($markdown)
+    private function Metadata($markdown)
     {
         $meta_data_parts = [];
         $markdown_re = '/```(.*?)```|\*\*(.*?)\*\*|`(.*?)`|__(.*?)__|--(.*?)--|~~(.*?)~~|\|\|(.*?)\|\||\[(.*?)\]\(\s*(https?:\/\/\S+|g0|u0|c0|[^\s]+)\s*\)/us';
