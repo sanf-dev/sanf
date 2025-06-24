@@ -28,7 +28,7 @@
     "phpseclib/phpseclib": "2.0.*",
     "cboden/ratchet": "0.4.4",
     "ratchet/pawl": "0.4.1",
-    "james-heinrich/getid3": "1.9",
+    "james-heinrich/getid3": "^1.9",
     "guzzlehttp/guzzle": "7.8"
   },
   "autoload": {
